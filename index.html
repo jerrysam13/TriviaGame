@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trivia Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- Screen 1: Welcome -->
+    <section id="screen-welcome" class="screen active">
+      <div class="card">
+        <div class="welcome-header">
+          <h1 class="game-title">Trivia Quiz</h1>
+          <p class="subtitle">Test your knowledge</p>
+        </div>
+
+        <div class="difficulty-group">
+          <label class="difficulty-label">Select Difficulty</label>
+          <div class="difficulty-buttons">
+            <button class="diff-btn active" data-difficulty="easy">Easy</button>
+            <button class="diff-btn" data-difficulty="medium">Medium</button>
+            <button class="diff-btn" data-difficulty="hard">Hard</button>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-start">Start Game</button>
+
+        <div class="leaderboard">
+          <h2 class="leaderboard-title">Leaderboard</h2>
+          <ol class="leaderboard-list" id="leaderboard-list"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 2: Question -->
+    <section id="screen-question" class="screen">
+      <div class="card">
+        <div class="question-meta">
+          <span id="question-counter">Question 1 of 10</span>
+          <span id="running-score">Score: 0</span>
+        </div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <p class="question-text" id="question-text"></p>
+
+        <div class="answers-grid" id="answers-grid"></div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Feedback -->
+    <section id="screen-feedback" class="screen">
+      <div class="card feedback-card">
+        <div class="feedback-icon" id="feedback-icon"></div>
+        <p class="feedback-label" id="feedback-label"></p>
+        <div class="correct-answer-box">
+          <p class="correct-answer-label">Correct Answer</p>
+          <p class="correct-answer-text" id="correct-answer-text"></p>
+        </div>
+        <button class="btn-primary" id="btn-next">Next Question</button>
+      </div>
+    </section>
+
+    <!-- Screen 4: Final Score -->
+    <section id="screen-final" class="screen">
+      <div class="card">
+        <h2 class="final-title">Game Over</h2>
+        <p class="final-score">You scored <strong id="score-value">0</strong> / 10</p>
+        <p class="final-message" id="final-message"></p>
+
+        <div class="save-score-group" id="save-score-group">
+          <input
+            type="text"
+            class="name-input"
+            id="name-input"
+            placeholder="Enter your name"
+            maxlength="20"
+            autocomplete="off"
+          />
+          <button class="btn-primary" id="btn-save">Save Score</button>
+        </div>
+
+        <div class="final-actions">
+          <button class="btn-secondary" id="btn-play-again">Play Again</button>
+          <button class="btn-ghost" id="btn-end">End</button>
+        </div>
+
+        <p class="thank-you" id="thank-you" aria-live="polite"></p>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
