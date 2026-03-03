@@ -8,7 +8,15 @@ const FLASH_DURATION  = 1000;
 
 // Firebase config — paste yours from Firebase Console → Project Settings → Your apps
 // Leave as null to use localStorage instead (safe default)
-const FIREBASE_CONFIG  = null;
+const FIREBASE_CONFIG  = {
+  apiKey:            'AIzaSyDlmhEMcxEThXVIkJkv5KU9pNgmRcoW05o',
+  authDomain:        'triviagame-92e3d.firebaseapp.com',
+  projectId:         'triviagame-92e3d',
+  storageBucket:     'triviagame-92e3d.firebasestorage.app',
+  messagingSenderId: '562292921711',
+  appId:             '1:562292921711:web:75b9ccc8c53d4c5bcc049a',
+  measurementId:     'G-DYMV3N3D81',
+};
 const COLLECTION_NAME  = 'leaderboard';
 
 /* ============================================================
