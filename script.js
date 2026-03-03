@@ -6,6 +6,11 @@ const TOTAL_QUESTIONS = 10;
 const API_BASE        = 'https://opentdb.com/api.php';
 const FLASH_DURATION  = 1000;
 
+// Firebase config — paste yours from Firebase Console → Project Settings → Your apps
+// Leave as null to use localStorage instead (safe default)
+const FIREBASE_CONFIG  = null;
+const COLLECTION_NAME  = 'leaderboard';
+
 /* ============================================================
    DOM Cache
    ============================================================ */
@@ -84,7 +89,49 @@ function showScreen(id) {
 /* ============================================================
    Leaderboard
    ============================================================ */
-function loadLeaderboard() {
+let firestore = null; // Holds Firebase helpers once loaded; null until initFirebase() succeeds
+
+async function initFirebase() {
+  if (firestore) return true;         // Already initialised — skip
+  if (!FIREBASE_CONFIG) return false; // Not configured — use localStorage
+
+  try {
+    const [{ initializeApp }, {
+      getFirestore, collection, addDoc, getDocs,
+      query, orderBy, limit, serverTimestamp,
+    }] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js'),
+    ]);
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db  = getFirestore(app);
+
+    firestore = { db, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp };
+    return true;
+  } catch {
+    return false; // Load failed — fall back to localStorage
+  }
+}
+
+async function loadLeaderboard() {
+  const useFirebase = await initFirebase();
+
+  if (useFirebase) {
+    try {
+      const { db, collection, getDocs, query, orderBy, limit } = firestore;
+      const q        = query(
+        collection(db, COLLECTION_NAME),
+        orderBy('score', 'desc'),
+        limit(5),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => doc.data());
+    } catch {
+      // Firestore read failed — fall through to localStorage
+    }
+  }
+
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
   } catch {
@@ -92,19 +139,40 @@ function loadLeaderboard() {
   }
 }
 
-function updateLeaderboard(newEntry) {
-  let board = loadLeaderboard();
-
-  if (newEntry) {
-    board.push(newEntry);
+function saveToLocalStorage(entry) {
+  try {
+    let board = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    board.push(entry);
     board.sort((a, b) => b.score - a.score);
     board = board.slice(0, 5);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(board));
-    } catch {
-      // Storage quota exceeded — continue without saving
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(board));
+  } catch {
+    // Storage quota exceeded — continue without saving
+  }
+}
+
+async function updateLeaderboard(newEntry) {
+  if (newEntry) {
+    const useFirebase = await initFirebase();
+
+    if (useFirebase) {
+      try {
+        const { db, collection, addDoc, serverTimestamp } = firestore;
+        await addDoc(collection(db, COLLECTION_NAME), {
+          name:      newEntry.name,
+          score:     newEntry.score,
+          timestamp: serverTimestamp(),
+        });
+      } catch {
+        // Firestore write failed — save to localStorage instead
+        saveToLocalStorage(newEntry);
+      }
+    } else {
+      saveToLocalStorage(newEntry);
     }
   }
+
+  const board = await loadLeaderboard();
 
   if (board.length === 0) {
     els.leaderboardList.innerHTML =
@@ -297,7 +365,7 @@ function showFinalScore() {
 /* ============================================================
    Score Saving
    ============================================================ */
-function saveScore() {
+async function saveScore() {
   const name = els.nameInput.value.trim();
 
   if (!name) {
@@ -309,7 +377,10 @@ function saveScore() {
     return;
   }
 
-  updateLeaderboard({ name, score: state.score });
+  els.btnSave.disabled = true;
+  els.btnSave.textContent = 'Saving...';
+
+  await updateLeaderboard({ name, score: state.score });
 
   els.saveScoreGroup.style.display = 'none';
   els.thankYou.textContent = `Score saved! Great game, ${name}.`;
